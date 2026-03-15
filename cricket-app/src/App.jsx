@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Scoreboard from "./components/Scoreboard";
+import PowerBar from "./components/PowerBar";
 import "./App.css";
 
 const MAX_BALLS = 12;
@@ -15,8 +16,15 @@ function App() {
   // We will build this out in Step 3!
   const handlePlayShot = (outcome) => {
     if (gameOver) return;
+    console.log(`Shot played! Outcome: ${outcome}`);
 
-    // Logic will go here to update runs or wickets based on the power bar
+    // Temporary logic just to verify state updates for your commit
+    if (outcome === "Wicket") {
+      setWickets((prev) => prev + 1);
+    } else {
+      setRuns((prev) => prev + parseInt(outcome));
+    }
+    setBallsPlayed((prev) => prev + 1);
   };
 
   const handleRestart = () => {
@@ -59,8 +67,11 @@ function App() {
                 <option value="Defensive">Defensive</option>
               </select>
             </div>
-            {/* Power bar component will be added here in Step 2 */}
-            <div className="placeholder-powerbar">Power Bar Region</div>
+            <PowerBar
+              battingStyle={battingStyle}
+              onPlayShot={handlePlayShot}
+              disabled={gameOver}
+            />
           </>
         )}
       </section>
