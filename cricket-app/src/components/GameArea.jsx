@@ -2,17 +2,21 @@ import React, { useState, useEffect } from "react";
 import bowlerImg from "../assets/bowler.png";
 import batsmanImg from "../assets/batsman.png";
 
-const GameArea = ({ isBowling, outcome }) => {
+const GameArea = ({ isBowling }) => {
   const [battingAnim, setBattingAnim] = useState(false);
 
   useEffect(() => {
+    let timer;
     if (isBowling) {
       // Trigger batting animation right as the ball reaches the batsman
-      const timer = setTimeout(() => setBattingAnim(true), 600);
-      return () => clearTimeout(timer);
+      timer = setTimeout(() => setBattingAnim(true), 600);
     } else {
-      setBattingAnim(false);
+      // Defer the state reset to avoid the synchronous effect error
+      timer = setTimeout(() => setBattingAnim(false), 0);
     }
+
+    // Cleanup function to clear the active timer if the component unmounts
+    return () => clearTimeout(timer);
   }, [isBowling]);
 
   return (
