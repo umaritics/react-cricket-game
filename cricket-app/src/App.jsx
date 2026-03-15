@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Scoreboard from "./components/Scoreboard";
 import PowerBar from "./components/PowerBar";
+import Pitch from "./components/Pitch";
 import "./App.css";
 
 const MAX_BALLS = 12;
@@ -13,18 +14,38 @@ function App() {
   const [battingStyle, setBattingStyle] = useState("Aggressive");
   const [gameOver, setGameOver] = useState(false);
 
-  // We will build this out in Step 3!
-  const handlePlayShot = (outcome) => {
-    if (gameOver) return;
-    console.log(`Shot played! Outcome: ${outcome}`);
+  // Animation states
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [currentOutcome, setCurrentOutcome] = useState(null);
 
-    // Temporary logic just to verify state updates for your commit
-    if (outcome === "Wicket") {
-      setWickets((prev) => prev + 1);
-    } else {
-      setRuns((prev) => prev + parseInt(outcome));
-    }
-    setBallsPlayed((prev) => prev + 1);
+  const handlePlayShot = (outcome) => {
+    if (gameOver || isAnimating) return;
+
+    // Trigger animations
+    setIsAnimating(true);
+    setCurrentOutcome(outcome);
+
+    const isWicket = outcome === "Wicket";
+    const runsScored = isWicket ? 0 : parseInt(outcome, 10);
+
+    const newWickets = wickets + (isWicket ? 1 : 0);
+    const newRuns = runs + runsScored;
+    const newBalls = ballsPlayed + 1;
+
+    // Update state
+    setRuns(newRuns);
+    setWickets(newWickets);
+    setBallsPlayed(newBalls);
+
+    // Check for game over after a short delay so the user sees the final shot
+    setTimeout(() => {
+      setIsAnimating(false);
+      setCurrentOutcome(null);
+
+      if (newWickets >= MAX_WICKETS || newBalls >= MAX_BALLS) {
+        setGameOver(true);
+      }
+    }, 1500); // 1.5 second animation lock
   };
 
   const handleRestart = () => {
@@ -33,6 +54,7 @@ function App() {
     setBallsPlayed(0);
     setBattingStyle("Aggressive");
     setGameOver(false);
+    setCurrentOutcome(null);
   };
 
   return (
@@ -43,14 +65,16 @@ function App() {
       </header>
 
       <main className="pitch-area">
-        {/* Sprites and animations will go here in Step 3 */}
-        <div className="placeholder-pitch">Pitch Area</div>
+        <Pitch isAnimating={isAnimating} outcome={currentOutcome} />
       </main>
 
       <section className="controls-area">
         {gameOver ? (
           <div className="game-over-screen">
             <h2>Game Over!</h2>
+            <p>
+              Final Score: {runs}/{wickets}
+            </p>
             <button onClick={handleRestart} className="btn-restart">
               Restart Game
             </button>
@@ -62,6 +86,7 @@ function App() {
               <select
                 value={battingStyle}
                 onChange={(e) => setBattingStyle(e.target.value)}
+                disabled={isAnimating}
               >
                 <option value="Aggressive">Aggressive</option>
                 <option value="Defensive">Defensive</option>
@@ -70,7 +95,7 @@ function App() {
             <PowerBar
               battingStyle={battingStyle}
               onPlayShot={handlePlayShot}
-              disabled={gameOver}
+              disabled={gameOver || isAnimating}
             />
           </>
         )}
