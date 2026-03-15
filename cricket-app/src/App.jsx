@@ -1,121 +1,71 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React, { useState } from "react";
+import Scoreboard from "./components/Scoreboard";
+import "./App.css";
+
+const MAX_BALLS = 12;
+const MAX_WICKETS = 2;
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [runs, setRuns] = useState(0);
+  const [wickets, setWickets] = useState(0);
+  const [ballsPlayed, setBallsPlayed] = useState(0);
+  const [battingStyle, setBattingStyle] = useState("Aggressive");
+  const [gameOver, setGameOver] = useState(false);
+
+  // We will build this out in Step 3!
+  const handlePlayShot = (outcome) => {
+    if (gameOver) return;
+
+    // Logic will go here to update runs or wickets based on the power bar
+  };
+
+  const handleRestart = () => {
+    setRuns(0);
+    setWickets(0);
+    setBallsPlayed(0);
+    setBattingStyle("Aggressive");
+    setGameOver(false);
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
+    <div className="game-container">
+      <header>
+        <h1>2D Cricket</h1>
+        <Scoreboard runs={runs} wickets={wickets} ballsPlayed={ballsPlayed} />
+      </header>
+
+      <main className="pitch-area">
+        {/* Sprites and animations will go here in Step 3 */}
+        <div className="placeholder-pitch">Pitch Area</div>
+      </main>
+
+      <section className="controls-area">
+        {gameOver ? (
+          <div className="game-over-screen">
+            <h2>Game Over!</h2>
+            <button onClick={handleRestart} className="btn-restart">
+              Restart Game
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="style-selector">
+              <label>Batting Style:</label>
+              <select
+                value={battingStyle}
+                onChange={(e) => setBattingStyle(e.target.value)}
+              >
+                <option value="Aggressive">Aggressive</option>
+                <option value="Defensive">Defensive</option>
+              </select>
+            </div>
+            {/* Power bar component will be added here in Step 2 */}
+            <div className="placeholder-powerbar">Power Bar Region</div>
+          </>
+        )}
       </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
