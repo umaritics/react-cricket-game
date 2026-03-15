@@ -1,105 +1,133 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import GameArea from "./components/GameArea";
 import Scoreboard from "./components/Scoreboard";
 import PowerBar from "./components/PowerBar";
-import Pitch from "./components/Pitch";
+import {
+  PROBABILITIES,
+  COMMENTARY_DB,
+  MAX_BALLS,
+  MAX_WICKETS,
+} from "./constants/gameData";
 import "./App.css";
-
-const MAX_BALLS = 12;
-const MAX_WICKETS = 2;
 
 function App() {
   const [runs, setRuns] = useState(0);
   const [wickets, setWickets] = useState(0);
-  const [ballsPlayed, setBallsPlayed] = useState(0);
-  const [battingStyle, setBattingStyle] = useState("Aggressive");
+  const [balls, setBalls] = useState(0);
+  const [battingStyle, setBattingStyle] = useState("aggressive");
+  const [isBowling, setIsBowling] = useState(false);
+  const [commentary, setCommentary] = useState("Waiting for the first ball...");
   const [gameOver, setGameOver] = useState(false);
 
-  // Animation states
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [currentOutcome, setCurrentOutcome] = useState(null);
+  // Mutable ref to track slider without causing re-renders
+  const sliderPositionRef = useRef(0);
 
-  const handlePlayShot = (outcome) => {
-    if (gameOver || isAnimating) return;
+  const handlePlayShot = () => {
+    if (balls >= MAX_BALLS || wickets >= MAX_WICKETS || isBowling) return;
 
-    // Trigger animations
-    setIsAnimating(true);
-    setCurrentOutcome(outcome);
+    setIsBowling(true); // Locks controls and stops slider
 
-    const isWicket = outcome === "Wicket";
-    const runsScored = isWicket ? 0 : parseInt(outcome, 10);
+    // 1. Determine outcome based strictly on probability segments
+    const currentPos = sliderPositionRef.current;
+    let cumulativeProb = 0;
+    let finalOutcome = "0";
 
-    const newWickets = wickets + (isWicket ? 1 : 0);
-    const newRuns = runs + runsScored;
-    const newBalls = ballsPlayed + 1;
-
-    // Update state
-    setRuns(newRuns);
-    setWickets(newWickets);
-    setBallsPlayed(newBalls);
-
-    // Check for game over after a short delay so the user sees the final shot
-    setTimeout(() => {
-      setIsAnimating(false);
-      setCurrentOutcome(null);
-
-      if (newWickets >= MAX_WICKETS || newBalls >= MAX_BALLS) {
-        setGameOver(true);
+    for (let seg of PROBABILITIES[battingStyle]) {
+      cumulativeProb += seg.prob * 100;
+      if (currentPos <= cumulativeProb) {
+        finalOutcome = seg.outcome;
+        break;
       }
-    }, 1500); // 1.5 second animation lock
+    }
+
+    // 2. Wait for animation to finish, then process result
+    setTimeout(() => {
+      processResult(finalOutcome);
+      setIsBowling(false); // Resets ball and unlocks controls
+    }, 1000);
   };
 
-  const handleRestart = () => {
+  const processResult = (outcome) => {
+    const comments = COMMENTARY_DB[outcome];
+    const randomComment = comments[Math.floor(Math.random() * comments.length)];
+
+    let newRuns = runs;
+    let newWickets = wickets;
+
+    if (outcome === "Wicket") {
+      newWickets += 1;
+      setCommentary(`WICKET! ${randomComment}`);
+    } else {
+      newRuns += parseInt(outcome);
+      setCommentary(`${outcome} Runs. ${randomComment}`);
+    }
+
+    setRuns(newRuns);
+    setWickets(newWickets);
+    setBalls((prev) => prev + 1);
+
+    if (newWickets >= MAX_WICKETS || balls + 1 >= MAX_BALLS) {
+      setGameOver(true);
+    }
+  };
+
+  const resetGame = () => {
     setRuns(0);
     setWickets(0);
-    setBallsPlayed(0);
-    setBattingStyle("Aggressive");
+    setBalls(0);
+    setBattingStyle("aggressive");
+    setCommentary("New game started. Good luck!");
     setGameOver(false);
-    setCurrentOutcome(null);
+    setIsBowling(false);
   };
 
   return (
-    <div className="game-container">
-      <header>
-        <h1>2D Cricket</h1>
-        <Scoreboard runs={runs} wickets={wickets} ballsPlayed={ballsPlayed} />
-      </header>
+    <div className="main-wrapper">
+      <div className="app-container">
+        <div className="game-wrapper">
+          <GameArea isBowling={isBowling} />
+          <Scoreboard
+            runs={runs}
+            wickets={wickets}
+            balls={balls}
+            commentary={commentary}
+          />
 
-      <main className="pitch-area">
-        <Pitch isAnimating={isAnimating} outcome={currentOutcome} />
-      </main>
+          {gameOver && (
+            <div className="game-over-modal">
+              <h2>Innings Over!</h2>
+              <p>
+                Final Score: {runs}/{wickets}
+              </p>
+              <button onClick={resetGame}>Restart Game</button>
+            </div>
+          )}
 
-      <section className="controls-area">
-        {gameOver ? (
-          <div className="game-over-screen">
-            <h2>Game Over!</h2>
-            <p>
-              Final Score: {runs}/{wickets}
-            </p>
-            <button onClick={handleRestart} className="btn-restart">
-              Restart Game
-            </button>
-          </div>
-        ) : (
-          <>
-            <div className="style-selector">
-              <label>Batting Style:</label>
-              <select
-                value={battingStyle}
-                onChange={(e) => setBattingStyle(e.target.value)}
-                disabled={isAnimating}
-              >
-                <option value="Aggressive">Aggressive</option>
-                <option value="Defensive">Defensive</option>
-              </select>
+          <div className="controls-footer">
+            <div className="controls-top">
+              <label>
+                Batting Style:
+                <select
+                  value={battingStyle}
+                  onChange={(e) => setBattingStyle(e.target.value)}
+                  disabled={isBowling || gameOver}
+                >
+                  <option value="aggressive">Aggressive</option>
+                  <option value="defensive">Defensive</option>
+                </select>
+              </label>
+              <button onClick={handlePlayShot} disabled={isBowling || gameOver}>
+                Play Shot
+              </button>
             </div>
             <PowerBar
               battingStyle={battingStyle}
-              onPlayShot={handlePlayShot}
-              disabled={gameOver || isAnimating}
+              sliderPositionRef={sliderPositionRef}
+              isBowling={isBowling}
             />
-          </>
-        )}
-      </section>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,71 +1,47 @@
-import React, { useState, useEffect, useRef } from "react";
-import { battingProbabilities, determineOutcome } from "../utils/probabilities";
-import "./PowerBar.css";
+import React, { useEffect, useRef } from "react";
+import { PROBABILITIES } from "../constants/gameData";
 
-const PowerBar = ({ battingStyle, onPlayShot, disabled }) => {
-  const [sliderPos, setSliderPos] = useState(0);
+const PowerBar = ({ battingStyle, sliderPositionRef, isBowling }) => {
+  const sliderDomRef = useRef(null);
   const requestRef = useRef();
-  const direction = useRef(1); // 1 for right, -1 for left
+  const directionRef = useRef(1);
+  const posRef = useRef(0);
 
   useEffect(() => {
-    if (disabled) return;
-
-    const speed = 0.015; // Adjust this value to make the slider faster/slower
-    let currentPos = sliderPos;
-
     const animate = () => {
-      currentPos += speed * direction.current;
+      if (!isBowling) {
+        posRef.current += directionRef.current * 1.5; // Adjust speed here
+        if (posRef.current >= 99 || posRef.current <= 0) {
+          directionRef.current *= -1;
+        }
 
-      // Reverse direction at the edges
-      if (currentPos >= 1) {
-        currentPos = 1;
-        direction.current = -1;
-      } else if (currentPos <= 0) {
-        currentPos = 0;
-        direction.current = 1;
+        if (sliderDomRef.current) {
+          sliderDomRef.current.style.left = `${posRef.current}%`;
+        }
+        // Update the mutable ref so the parent knows the position without a re-render
+        sliderPositionRef.current = posRef.current;
       }
-
-      setSliderPos(currentPos);
       requestRef.current = requestAnimationFrame(animate);
     };
 
     requestRef.current = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(requestRef.current);
-  }, [disabled]);
-
-  const handleShotClick = () => {
-    if (disabled) return;
-    const outcome = determineOutcome(sliderPos, battingStyle);
-    onPlayShot(outcome);
-  };
-
-  const segments = battingProbabilities[battingStyle];
+  }, [isBowling, sliderPositionRef]);
 
   return (
-    <div className="power-bar-container">
-      <div className="power-bar">
-        {segments.map((seg, index) => (
+    <div className="power-bar-wrapper">
+      <div className="power-bar-container">
+        <div ref={sliderDomRef} className="slider"></div>
+        {PROBABILITIES[battingStyle].map((seg, idx) => (
           <div
-            key={index}
-            className="power-bar-segment"
-            style={{
-              width: `${seg.prob * 100}%`,
-              backgroundColor: seg.color,
-            }}
+            key={idx}
+            className="segment"
+            style={{ width: `${seg.prob * 100}%`, backgroundColor: seg.color }}
           >
-            {/* Only show text if segment is wide enough */}
-            {seg.prob >= 0.05 ? seg.outcome : ""}
+            {seg.outcome}
           </div>
         ))}
-        <div className="slider" style={{ left: `${sliderPos * 100}%` }}></div>
       </div>
-      <button
-        className="btn-play-shot"
-        onClick={handleShotClick}
-        disabled={disabled}
-      >
-        Play Shot
-      </button>
     </div>
   );
 };

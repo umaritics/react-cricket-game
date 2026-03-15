@@ -1,70 +1,278 @@
-.game-container {
-  max-width: 800px;
-  margin: 0 auto;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  text-align: center;
+/* --- Global & Layout --- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* --- Global & Layout --- */
+body {
   background-color: #2c3e50;
-  color: white;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-header {
-  background-color: #1a252f;
-  padding: 15px;
-}
-
-.pitch-area {
-  height: 300px;
-  background-color: #27ae60;
-  border-top: 5px solid #fff;
-  border-bottom: 5px solid #fff;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* Kills the horizontal mobile scrollbar entirely */
 }
 
-.controls-area {
-  padding: 20px;
-  background-color: #34495e;
-}
-
-.style-selector {
-  margin-bottom: 15px;
-}
-
-.style-selector select {
-  margin-left: 10px;
-  padding: 5px 10px;
-  border-radius: 5px;
-}
-
-.btn-restart {
-  padding: 10px 20px;
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.btn-restart:hover {
-  background-color: #c0392b;
-}
-
-/* Scoreboard.css */
-.scoreboard-container {
-  display: flex;
-  justify-content: space-around;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 10px;
-  border-radius: 8px;
-  margin-top: 10px;
-}
-
-.score-stat {
+.main-wrapper {
+  width: 96vw; /* Leaves a 2vw gap on each side automatically */
+  max-width: 1000px;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  margin: 0 auto;
+}
+
+/* ... keep your other CSS ... */
+
+/* --- Fix the Power Bar Segment Text --- */
+.segment {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: clamp(8px, 1.2vw, 12px);
+  font-weight: bold;
+  text-shadow: 1px 1px 2px #000;
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
+  overflow: hidden; /* Prevents the text from overflowing its color block */
+  white-space: nowrap; /* Keeps the number on one line */
+}
+.segment:last-child {
+  border-right: none;
+}
+
+.game-title {
+  color: #f39c12;
+  margin-bottom: 10px;
+  font-size: clamp(24px, 4vw, 36px); /* Fluid size */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.app-container {
+  width: 100%;
+  aspect-ratio: 10 / 6; /* Automatically handles height based on width! */
+  position: relative;
+  overflow: hidden;
+  background-image: url("./assets/stadium_bg.png");
+  background-size: cover;
+  background-position: center;
+  border: 4px solid #34495e;
+  border-radius: 10px;
+}
+
+/* --- Responsive UI Elements --- */
+.sticky-note {
+  position: absolute;
+  top: 3%;
+  left: 3%;
+  background: #f1c40f;
+  padding: 1.5%;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+  transform: rotate(-2deg);
+  font-size: clamp(8px, 1.2vw, 14px); /* Scales font down on mobile */
+  font-weight: bold;
+  color: #333;
+  z-index: 100;
+}
+
+.scoreboard {
+  position: absolute;
+  top: 12%;
+  right: 4%;
+  width: 22%;
+  min-width: 120px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 1.5%;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  font-size: clamp(10px, 1.5vw, 16px);
+}
+.commentary {
+  margin-top: 5px;
+  font-size: clamp(9px, 1.2vw, 12px);
+  font-style: italic;
+  color: #f1c40f;
+  text-align: center;
+  border-top: 1px solid #555;
+  padding-top: 5px;
+}
+
+/* --- Responsive Players & Animations --- */
+.game-area {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.player {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 26%; /* Height is now relative to the container */
+}
+
+.sprite {
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+}
+
+.bowler {
+  bottom: 14%;
+  left: 75%;
+}
+.batsman {
+  bottom: 14%;
+  left: -80px;
+  transition: transform 0.15s ease-in-out;
+}
+.batsman.swing {
+  transform: rotate(-30deg) scale(1.1);
+}
+
+.ball {
+  position: absolute;
+  width: 1.5%;
+  aspect-ratio: 1; /* Responsive ball size */
+  background: white;
+  border-radius: 50%;
+  box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.4);
+  bottom: 28%;
+  left: 72%;
+  opacity: 0;
+}
+.ball.bowl-action {
+  opacity: 1;
+  transition:
+    left 0.7s linear,
+    bottom 0.7s linear;
+  left: 18%;
+  bottom: 20%;
+}
+
+/* --- Responsive Footer & PowerBar --- */
+.controls-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 18%; /* Relative height */
+  background: rgba(44, 62, 80, 0.95);
+  padding: 1% 2%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  border-top: 3px solid #f39c12;
+}
+
+.controls-top {
+  display: flex;
+  justify-content: space-between;
+  color: white;
+  align-items: center;
+  font-size: clamp(10px, 1.5vw, 14px);
+}
+select,
+button {
+  padding: 4px 10px;
+  margin-left: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: clamp(10px, 1.2vw, 14px);
+}
+button {
+  background: #f39c12;
+  color: white;
+  border: none;
+  border-radius: 3px;
+}
+button:disabled {
+  background: #7f8c8d;
+  cursor: not-allowed;
+}
+
+.power-bar-wrapper {
+  width: 90%;
+  margin: 0 auto;
+  height: 35%;
+}
+.power-bar-container {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  border-radius: 5px;
+  position: relative;
+  overflow: hidden;
+  border: 2px solid #ccc;
+  display: flex;
+}
+
+.slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
+  background: #fff;
+  border: 1px solid #000;
+  z-index: 10;
+}
+.slider::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 2px;
+  width: 2px;
+  height: 100%;
+  background: red;
+}
+
+/* Modal */
+.game-over-modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 200;
+  gap: 15px;
+}
+
+/* Extra Mobile Adjustments */
+@media (max-width: 600px) {
+  .controls-top {
+    flex-direction: column;
+    gap: 5px;
+  }
+  .scoreboard {
+    width: 30%;
+    top: 15%;
+    right: 2%;
+  }
 }

@@ -1,0 +1,42 @@
+import React, { useState, useEffect } from "react";
+import bowlerImg from "../assets/bowler.png";
+import batsmanImg from "../assets/batsman.png";
+
+const GameArea = ({ isBowling, outcome }) => {
+  const [battingAnim, setBattingAnim] = useState(false);
+
+  useEffect(() => {
+    if (isBowling) {
+      // Trigger batting animation right as the ball reaches the batsman
+      const timer = setTimeout(() => setBattingAnim(true), 600);
+      return () => clearTimeout(timer);
+    } else {
+      setBattingAnim(false);
+    }
+  }, [isBowling]);
+
+  return (
+    <div className="game-area">
+      {/* Sticky Note Requirement */}
+      <div className="sticky-note">
+        Name: Muhammad Umar
+        <br />
+        Roll Number: XXi-XXXX
+        <br />
+        Section: X
+      </div>
+
+      <div className="player bowler">
+        <img src={bowlerImg} alt="Bowler" className="sprite" />
+      </div>
+
+      <div className={`player batsman ${battingAnim ? "swing" : ""}`}>
+        <img src={batsmanImg} alt="Batsman" className="sprite" />
+      </div>
+
+      <div className={`ball ${isBowling ? "bowl-action" : ""}`}></div>
+    </div>
+  );
+};
+
+export default GameArea;
